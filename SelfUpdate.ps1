@@ -1,7 +1,7 @@
 $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
 Write-Host "Checking for updates to Posh-SentinelOne"
-$RepositoryManifest = "https://mtllpvinfgit01.arifleet.com/bcarroll/posh-sentinelone/raw/master/Posh-SentinelOne.psd1"
-$RepositoryDownload = "https://mtllpvinfgit01.arifleet.com/bcarroll/posh-sentinelone/repository/archive.zip?ref=master"
+$RepositoryManifest = "https://raw.githubusercontent.com/zeroonesec/posh-sentinelone/master/Posh-SentinelOne.psd1"
+$RepositoryDownload = "https://github.com/zeroonesec/posh-sentinelone/archive/master.zip"
 $ModuleVersion = (Import-LocalizedData -BaseDirectory $scriptDir -FileName Posh-SentinelOne.psd1).ModuleVersion
 
 $Result = Invoke-WebRequest -URI $RepositoryManifest -ContentType 'application/text' -OutFile "$scriptDir\RepositoryManifest.psd1"
