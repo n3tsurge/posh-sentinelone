@@ -12,7 +12,7 @@
 RootModule = 'Posh-SentinelOne.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.7.2'
+ModuleVersion = '1.7.5'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -69,7 +69,7 @@ ScriptsToProcess = @("SelfUpdate.ps1")
 # NestedModules = @()
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
-FunctionsToExport = @("Get-S1Group","Set-S1APIKey","Read-S1APIKey","New-S1Hash","Get-S1Hash","Get-S1AgentProcesses","Get-S1AgentApplications","Get-S1AgentPassphrase","Invoke-S1AgentScan","Stop-S1AgentScan","Get-S1Agent","Get-S1Agents","Get-S1Threat","Set-S1ThreatResolved","Invoke-S1IsolateAgent","Invoke-S1ConnectAgent","Get-S1ThreatForensics","New-S1User")
+FunctionsToExport = @("Invoke-S1ThreatMitigate","Get-S1Group","Set-S1APIKey","Read-S1APIKey","New-S1Hash","Get-S1Hash","Get-S1AgentProcesses","Get-S1AgentApplications","Get-S1AgentPassphrase","Invoke-S1AgentScan","Stop-S1AgentScan","Get-S1Agent","Get-S1Agents","Get-S1Threat","Set-S1ThreatResolved","Invoke-S1IsolateAgent","Invoke-S1ConnectAgent","Get-S1ThreatForensics","New-S1User")
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
 CmdletsToExport = @()

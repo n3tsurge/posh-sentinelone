@@ -1208,6 +1208,99 @@ function Get-S1Agent {
     }
 }
 
+function Invoke-S1ThreatMitigate {
+    [CmdletBinding(DefaultParameterSetName = 'Direct')]
+
+    Param (
+        [Parameter(ParameterSetName = 'Direct',
+            Mandatory=$true)]
+        [Parameter(ParameterSetName = 'Proxy',
+            Mandatory=$true)]
+        [string]$ThreatID,
+
+        [Parameter(ParameterSetName = 'Direct',
+            Mandatory=$true)]
+        [Parameter(ParameterSetName = 'Proxy',
+            Mandatory=$true)]
+        [ValidateSet("kill","quarantine","un-quarantine","remediate","rollback-remediation")]
+        [string]$Action,
+
+        [Parameter(ParameterSetName = 'Proxy',
+            Mandatory=$false,
+            ValueFromPipelineByPropertyName=$true)]
+        [string]$Proxy=$Global:Proxy,
+
+        [Parameter(ParameterSetName = 'Proxy',
+            Mandatory=$false,
+            ValueFromPipelineByPropertyName=$true)]
+        [Switch]$ProxyUseDefaultCredentials
+    )
+
+    Begin {
+        $tenant = $Global:Tenant
+
+        $URI = "https://$tenant.sentinelone.net/web/api/v1.6/threats/$ThreatID/mitigate/$Action"
+
+        if(!(Test-Path variable:Global:S1APIKey) -and !($APIKey)) {
+            Read-S1APIKey
+            $APIKey = $Global:S1APIKey
+        } elseif ((Test-Path variable:Global:S1APIKey) -and !($APIKey)) {
+            $APIKey = $Global:S1APIKey
+        }
+    }
+
+    Process {
+        $OldEAP = $ErrorActionPreference
+        $ErrorActionPreference = 'SilentlyContinue'
+
+        # Request Headers
+        $Headers = @{}
+        $Headers.Add('Authorization', 'APIToken '+$APIKey)
+
+        # Build REST parameters
+        $Params = @{}
+        $Params.Add('Uri', $URI)
+        $Params.Add('Method', 'Post')
+        $Params.Add('ErrorVariable', 'RESTError')
+        $Params.Add('ContentType', 'application/json')
+        $Params.Add('Headers', $Headers)
+
+        # Check if connection will be made thru a proxy.
+        if ($PsCmdlet.ParameterSetName -eq 'Proxy')
+        {
+            $Params.Add('Proxy', $Proxy)
+
+            if ($ProxyCredential)
+            {
+                $Params.Add('ProxyCredential', $ProxyCredential)
+            }
+
+            if ($ProxyUseDefaultCredentials)
+            {
+                $Params.Add('ProxyUseDefaultCredentials', $ProxyUseDefaultCredentials)
+            }
+        }
+
+        $Result = Invoke-RestMethod @Params 
+
+        if($RESTError) {
+            Write-Host $RESTError.message -ForegroundColor Red
+            return $false
+        } else {
+            if(!$Result) {
+                return $true
+            } else {
+                Write-Host "The threat $ThreatID could not be remediated." -ForegroundColor Red
+                return $false
+            }
+        }
+
+        return $true
+
+        $ErrorActionPreference = $OldEAP 
+    }
+}
+
 function Set-S1ThreatResolved {
     [CmdletBinding(DefaultParameterSetName = 'Direct')]
 
@@ -1266,7 +1359,7 @@ function Set-S1ThreatResolved {
         $Params.Add('ContentType', 'application/json')
         $Params.Add('Headers', $Headers)
 
-         # Check if connection will be made thru a proxy.
+        # Check if connection will be made thru a proxy.
         if ($PsCmdlet.ParameterSetName -eq 'Proxy')
         {
             $Params.Add('Proxy', $Proxy)
