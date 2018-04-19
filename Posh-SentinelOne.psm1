@@ -846,7 +846,20 @@ function Get-S1Agents {
             Mandatory=$false)]
         [Parameter(ParameterSetName = 'Proxy',
             Mandatory=$false)]
+        [ValidateSet("unknown","osx","windows","android","linux")]
+        [string]$OsType,
+
+        [Parameter(ParameterSetName = 'Direct',
+            Mandatory=$false)]
+        [Parameter(ParameterSetName = 'Proxy',
+            Mandatory=$false)]
         [string]$Limit=10,
+
+        [Parameter(ParameterSetName = 'Direct',
+            Mandatory=$false)]
+        [Parameter(ParameterSetName = 'Proxy',
+            Mandatory=$false)]
+        [switch]$Infected=$false,
 
         [Parameter(ParameterSetName = 'Direct',
             Mandatory=$false)]
@@ -865,15 +878,81 @@ function Get-S1Agents {
         [Switch]$ProxyUseDefaultCredentials
     )
 
-    Begin {}
-    Process {
-        <#
+    Begin {
 
+        $tenant = $Global:Tenant
 
-        #>
-        
+        $URI = 'https://'+$tenant+'.sentinelone.net/web/api/v1.6/agents/iterator'
+        $urlparams = @{
+            'limit' = $limit;
+        }
+
+        if($Query) {
+            $urlparams.add('query', $query)
+        }
+        if($Infected) {
+            $urlparams.add('infected', 'true')
+        }
+        if($OsType) {
+            $urlparams.add('os_type', $OsType)
+        }
+
+        if(!(Test-Path variable:Global:S1APIKey) -and !($APIKey)) {
+            Read-S1APIKey
+            $APIKey = $Global:S1APIKey
+        } elseif ((Test-Path variable:Global:S1APIKey) -and !($APIKey)) {
+            $APIKey = $Global:S1APIKey
+        }
     }
 
+    Process {
+        
+        $OldEAP = $ErrorActionPreference
+        $ErrorActionPreference = 'SilentlyContinue'
+
+        # Request Headers
+        $Headers = @{}
+        $Headers.Add('Authorization', 'APIToken '+$APIKey)
+
+        # Build REST parameters
+        $Params = @{}
+        $Params.Add('Uri', $URI + (Set-URLParams $urlparams))
+        $Params.Add('Method', 'Get')
+        $Params.Add('ErrorVariable', 'RESTError')
+        $Params.Add('ContentType', 'application/json')
+        $Params.Add('Headers', $Headers)
+
+         # Check if connection will be made thru a proxy.
+        if ($PsCmdlet.ParameterSetName -eq 'Proxy')
+        {
+            $Params.Add('Proxy', $Proxy)
+
+            if ($ProxyCredential)
+            {
+                $Params.Add('ProxyCredential', $ProxyCredential)
+            }
+
+            if ($ProxyUseDefaultCredentials)
+            {
+                $Params.Add('ProxyUseDefaultCredentials', $ProxyUseDefaultCredentials)
+            }
+        }
+
+        $agents = @()
+
+        while($true) {
+            $Result = Invoke-RestMethod @Params
+            $agents += $Result.data
+            if($Result.last_id -eq $null) {
+                break;
+            } else {
+                $urlparams.last_id = $Result.last_id
+                $Params.URI = $URI + (Set-URLParams $urlparams)
+            }
+        } 
+
+        return $agents        
+    }
 }
 
 function Stop-S1AgentScan {
