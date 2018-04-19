@@ -853,6 +853,12 @@ function Get-S1Agents {
             Mandatory=$false)]
         [Parameter(ParameterSetName = 'Proxy',
             Mandatory=$false)]
+        [string]$Domain,
+
+        [Parameter(ParameterSetName = 'Direct',
+            Mandatory=$false)]
+        [Parameter(ParameterSetName = 'Proxy',
+            Mandatory=$false)]
         [string]$Limit=10,
 
         [Parameter(ParameterSetName = 'Direct',
@@ -895,6 +901,9 @@ function Get-S1Agents {
         }
         if($OsType) {
             $urlparams.add('os_type', $OsType)
+        }
+        if($Domain) {
+            $urlparams.add('domain__in', $domain)
         }
 
         if(!(Test-Path variable:Global:S1APIKey) -and !($APIKey)) {
