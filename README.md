@@ -1,3 +1,5 @@
+** NOTE: This project is on hold until I can get my hands on the new API released in Central Park (Version 2.6), this will require a rewrite of this module**
+
 # Posh-SentinelOne
 
 A Powershell Module for managing Sentinel One allowing for easier integration into Powershell scripts and automation routines.
