@@ -1,4 +1,4 @@
-**NOTE: This project is being archive.  The new module version can be found here https://github.com/zeroonesec/posh-sentinelone2.0**
+THIS REPOSITORY IS NO LONGER UNDER ACTIVE DEVELOPMENT
 
 # Posh-SentinelOne
 
